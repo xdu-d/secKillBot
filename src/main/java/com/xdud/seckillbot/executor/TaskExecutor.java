@@ -133,7 +133,8 @@ public class TaskExecutor {
         saveExecutionLog(task, account, result, actualAt, durationMs);
 
         if (result.getResult() == ExecutionResult.SUCCESS) {
-            notificationChannels.forEach(ch -> ch.sendSuccess(task, account, result.getOrderId()));
+            final OrderResult finalResult = result;
+            notificationChannels.forEach(ch -> ch.sendSuccess(task, account, finalResult.getOrderId()));
         }
 
         return result;

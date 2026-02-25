@@ -63,15 +63,22 @@ src/test/java/com/xdud/seckillbot/
 
 Maven 本地仓库配置于 `C:\Users\10355\Program Data\maven-local-repository`，settings 文件位于 `C:\Users\10355\.m2\settings.xml`。
 
+**WSL 环境下**需指定 `JAVA_HOME` 和仓库路径（Maven 在 Windows 路径下）：
+
 ```bash
-mvn clean compile                    # 编译
-mvn clean package -DskipTests        # 打包（跳过测试）
-mvn spring-boot:run                  # 运行（dev profile，H2 内嵌数据库）
-mvn test                             # 运行所有测试
-mvn test -Dtest=ClassName            # 运行单个测试类
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+export PATH=$JAVA_HOME/bin:$PATH
+MVN="/mnt/c/Program Files/Maven/apache-maven-3.6.3/bin/mvn"
+REPO="/mnt/c/Users/10355/Program Data/maven-local-repository"
+
+$MVN clean compile -Dmaven.repo.local="$REPO"                    # 编译
+$MVN clean package -DskipTests -Dmaven.repo.local="$REPO"        # 打包（跳过测试）
+$MVN spring-boot:run -Dmaven.repo.local="$REPO"                  # 运行（dev profile，H2 内嵌数据库）
+$MVN test -Dmaven.repo.local="$REPO"                             # 运行所有测试
+$MVN test -Dtest=ClassName -Dmaven.repo.local="$REPO"            # 运行单个测试类
 ```
 
-**注意**：运行前需要本地 Redis（dev 默认 127.0.0.1:6379）。若无 Redis 可注释 Redisson 相关 Bean。
+**注意**：运行前需确保 Redis 已启动（`sudo service redis-server start`，dev 默认 127.0.0.1:6379）。
 
 ## 重要配置
 
