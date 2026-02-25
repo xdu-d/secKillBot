@@ -68,8 +68,8 @@ CREATE TABLE IF NOT EXISTS task_account
     account_id BIGINT NOT NULL COMMENT '账号 ID',
     sort_order INT    NOT NULL DEFAULT 0 COMMENT '顺序执行时的优先级',
     UNIQUE KEY uk_task_account (task_id, account_id),
-    INDEX idx_task_id (task_id),
-    INDEX idx_account_id (account_id)
+    INDEX idx_ta_task_id (task_id),
+    INDEX idx_ta_account_id (account_id)
 );
 
 -- 执行日志表
@@ -85,9 +85,9 @@ CREATE TABLE IF NOT EXISTS execution_log
     order_id      VARCHAR(128) COMMENT '平台订单号（成功时有值）',
     error_msg     VARCHAR(512) COMMENT '错误信息',
     created_at    DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    INDEX idx_task_id (task_id),
-    INDEX idx_account_id (account_id),
-    INDEX idx_result (result)
+    INDEX idx_el_task_id (task_id),
+    INDEX idx_el_account_id (account_id),
+    INDEX idx_el_result (result)
 );
 
 -- 管理用户表
@@ -105,5 +105,5 @@ CREATE TABLE IF NOT EXISTS sys_user
 -- 默认管理员账号（密码：admin123，BCrypt 加密）
 -- 生产环境请在首次登录后立即修改密码
 INSERT INTO sys_user (username, password, nickname, enabled)
-VALUES ('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBpwTTyU.3Ywoe', '管理员', 1)
+VALUES ('admin', '$2b$10$iaUiwn.YtKugPcUSAy6z6OkFTcFXnCzAfVrXiMk8L4x5SFziooKy2', '管理员', 1)
 ON DUPLICATE KEY UPDATE username = username;

@@ -30,7 +30,7 @@ app:
     secret: secKillBotDefaultSecretKey32CharsMustBeLong!
     expiration-ms: 86400000  # 24h
   crypto:
-    aes-key: BASE64_ENCODED_32_BYTE_KEY_REPLACE_ME=  # 替换为 Base64(32字节随机密钥)
+    aes-key: NZya4UvT8gE3Mt308nbvMEav/pAW5djFMU49EmyMZSY=  # dev 环境密钥，生产环境请替换
   notification:
     serverchan:
       enabled: false
