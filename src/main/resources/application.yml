@@ -1,0 +1,42 @@
+spring:
+  profiles:
+    active: dev   # 开发环境默认；生产部署时用 --spring.profiles.active=prod 覆盖
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    default-property-inclusion: non_null
+
+  mail:
+    host: smtp.example.com
+    port: 587
+    username: noreply@example.com
+    password: changeme
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+  global-config:
+    db-config:
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+app:
+  jwt:
+    secret: secKillBotDefaultSecretKey32CharsMustBeLong!
+    expiration-ms: 86400000  # 24h
+  crypto:
+    aes-key: BASE64_ENCODED_32_BYTE_KEY_REPLACE_ME=  # 替换为 Base64(32字节随机密钥)
+  notification:
+    serverchan:
+      enabled: false
+      send-key: ""
+
+logging:
+  level:
+    com.xdud.seckillbot: DEBUG
+    org.springframework.security: WARN

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>秒杀机器人 - secKillBot</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 { font-size: 2.5rem; margin-bottom: 1rem; color: #60a5fa; }
+    p  { color: #94a3b8; margin-bottom: 2rem; }
+    .badge {
+      display: inline-block;
+      padding: .3rem .8rem;
+      border-radius: 999px;
+      font-size: .8rem;
+      background: #1e3a5f;
+      color: #60a5fa;
+      margin: .2rem;
+    }
+    .api-hint {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: #1e293b;
+      border-radius: .5rem;
+      font-size: .85rem;
+      color: #64748b;
+    }
+    code { color: #34d399; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚡ secKillBot</h1>
+    <p>多平台秒杀机器人管理系统</p>
+    <div>
+      <span class="badge">i茅台</span>
+      <span class="badge">大麦网</span>
+      <span class="badge">猫眼</span>
+    </div>
+    <div class="api-hint">
+      前端 Vue 3 界面待 Phase 1 完成后集成。<br>
+      当前可直接访问 REST API：<code>POST /api/auth/login</code><br>
+      H2 控制台（dev 环境）：<code><a href="/h2-console" style="color:#60a5fa">/h2-console</a></code>
+    </div>
+  </div>
+</body>
+</html>
