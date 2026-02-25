@@ -1,0 +1,24 @@
+# Maven 编译输出
+target/
+
+# 日志文件
+logs/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 环境配置（包含敏感信息，不提交）
+config.properties
+*.env
