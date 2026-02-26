@@ -29,3 +29,18 @@ frontend/dist/
 
 # 本地 Claude Code 权限配置（不提交到远程）
 .claude/settings.local.json
+
+# Maven 依赖意外落到项目根目录时的防护
+aopalliance/
+asm/
+backport-util-concurrent/
+ch/
+classworlds/
+com/
+commons-io/
+io/
+jakarta/
+javax/
+junit/
+net/
+org/
