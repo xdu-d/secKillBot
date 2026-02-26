@@ -55,7 +55,7 @@ public class SecurityConfig {
             .and()
             .authorizeRequests()
                 .antMatchers("/api/auth/login").permitAll()
-                .antMatchers("/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
+                .antMatchers("/", "/*.html", "/js/**", "/css/**", "/assets/**", "/favicon.ico").permitAll()
                 .antMatchers("/h2-console/**").permitAll()
                 .anyRequest().authenticated()
             .and()

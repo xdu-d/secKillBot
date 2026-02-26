@@ -3,6 +3,7 @@ package com.xdud.seckillbot.api.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xdud.seckillbot.api.dto.request.AccountCreateRequest;
+import com.xdud.seckillbot.api.dto.request.SmsLoginRequest;
 import com.xdud.seckillbot.api.dto.response.ApiResponse;
 import com.xdud.seckillbot.domain.entity.Account;
 import com.xdud.seckillbot.service.AccountService;
@@ -45,5 +46,17 @@ public class AccountController {
     public ApiResponse<Void> refreshAuth(@PathVariable Long id) {
         accountService.refreshAuth(id);
         return ApiResponse.ok();
+    }
+
+    @PostMapping("/{id}/send-sms")
+    public ApiResponse<Void> sendSmsCode(@PathVariable Long id) {
+        accountService.sendSmsCode(id);
+        return ApiResponse.ok();
+    }
+
+    @PostMapping("/{id}/login-sms")
+    public ApiResponse<Account> loginWithSms(@PathVariable Long id,
+                                             @RequestBody SmsLoginRequest request) {
+        return ApiResponse.ok(accountService.loginWithSmsCode(id, request.getCode()));
     }
 }

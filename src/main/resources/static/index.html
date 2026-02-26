@@ -3,58 +3,99 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>秒杀机器人 - secKillBot</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #0f172a;
-      color: #e2e8f0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .container {
-      text-align: center;
-      padding: 2rem;
-    }
-    h1 { font-size: 2.5rem; margin-bottom: 1rem; color: #60a5fa; }
-    p  { color: #94a3b8; margin-bottom: 2rem; }
-    .badge {
-      display: inline-block;
-      padding: .3rem .8rem;
-      border-radius: 999px;
-      font-size: .8rem;
-      background: #1e3a5f;
-      color: #60a5fa;
-      margin: .2rem;
-    }
-    .api-hint {
-      margin-top: 2rem;
-      padding: 1rem;
-      background: #1e293b;
-      border-radius: .5rem;
-      font-size: .85rem;
-      color: #64748b;
-    }
-    code { color: #34d399; }
-  </style>
+  <title>登录 - secKillBot</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
-  <div class="container">
-    <h1>⚡ secKillBot</h1>
-    <p>多平台秒杀机器人管理系统</p>
-    <div>
-      <span class="badge">i茅台</span>
-      <span class="badge">大麦网</span>
-      <span class="badge">猫眼</span>
-    </div>
-    <div class="api-hint">
-      前端 Vue 3 界面待 Phase 1 完成后集成。<br>
-      当前可直接访问 REST API：<code>POST /api/auth/login</code><br>
-      H2 控制台（dev 环境）：<code><a href="/h2-console" style="color:#60a5fa">/h2-console</a></code>
-    </div>
+<div id="app">
+  <div class="login-wrapper">
+    <el-card class="login-card" shadow="always">
+      <div class="login-title">
+        <h1>⚡ secKillBot</h1>
+        <p>多平台秒杀机器人管理系统</p>
+      </div>
+      <el-form :model="form" :rules="rules" ref="loginForm" @submit.prevent="handleLogin">
+        <el-form-item prop="username">
+          <el-input
+            v-model="form.username"
+            placeholder="用户名"
+            prefix-icon="User"
+            size="large"
+            clearable
+          />
+        </el-form-item>
+        <el-form-item prop="password">
+          <el-input
+            v-model="form.password"
+            placeholder="密码"
+            prefix-icon="Lock"
+            type="password"
+            size="large"
+            show-password
+            @keyup.enter="handleLogin"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button
+            type="primary"
+            size="large"
+            style="width:100%"
+            :loading="loading"
+            @click="handleLogin"
+          >
+            登 录
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
   </div>
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://unpkg.com/element-plus"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="/js/api.js"></script>
+<script>
+const { createApp, ref, onMounted } = Vue;
+
+createApp({
+  setup() {
+    const loginForm = ref(null);
+    const loading = ref(false);
+    const form = ref({ username: '', password: '' });
+    const rules = {
+      username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+      password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+    };
+
+    onMounted(() => {
+      if (localStorage.getItem('jwt_token')) {
+        window.location.href = '/dashboard.html';
+      }
+    });
+
+    async function handleLogin() {
+      if (!loginForm.value) return;
+      const valid = await loginForm.value.validate().catch(() => false);
+      if (!valid) return;
+
+      loading.value = true;
+      try {
+        const res = await api.auth.login(form.value.username, form.value.password);
+        localStorage.setItem('jwt_token', res.data.token);
+        localStorage.setItem('jwt_username', form.value.username);
+        window.location.href = '/dashboard.html';
+      } catch (e) {
+        ElementPlus.ElMessage.error(e.message || '登录失败');
+      } finally {
+        loading.value = false;
+      }
+    }
+
+    return { form, rules, loginForm, loading, handleLogin };
+  }
+}).use(ElementPlus).mount('#app');
+</script>
 </body>
 </html>

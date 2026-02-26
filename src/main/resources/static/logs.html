@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>执行日志 - secKillBot</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div id="app">
+  <!-- 导航栏 -->
+  <div class="nav-container">
+    <el-menu mode="horizontal" :default-active="'logs'" background-color="#fff">
+      <el-menu-item index="dashboard" @click="go('dashboard')">🏠 仪表板</el-menu-item>
+      <el-menu-item index="accounts"  @click="go('accounts')">👤 账号管理</el-menu-item>
+      <el-menu-item index="tasks"     @click="go('tasks')">📋 任务管理</el-menu-item>
+      <el-menu-item index="logs"      @click="go('logs')">📄 执行日志</el-menu-item>
+      <div class="nav-spacer"></div>
+      <el-menu-item @click="logout" style="margin-left:auto">退出 ({{ username }})</el-menu-item>
+    </el-menu>
+  </div>
+
+  <div class="main-content">
+    <h2 style="margin-bottom:16px;color:#303133">执行日志</h2>
+
+    <!-- 筛选栏 -->
+    <div class="filter-bar">
+      <el-input
+        v-model="filter.taskId"
+        placeholder="任务ID"
+        clearable
+        style="width:150px"
+        @change="doFilter"
+      />
+      <el-select
+        v-model="filter.result"
+        placeholder="结果筛选"
+        clearable
+        style="width:140px"
+        @change="doFilter"
+      >
+        <el-option label="SUCCESS"      value="SUCCESS" />
+        <el-option label="NO_STOCK"     value="NO_STOCK" />
+        <el-option label="AUTH_EXPIRED" value="AUTH_EXPIRED" />
+        <el-option label="FAILED"       value="FAILED" />
+      </el-select>
+      <el-button type="primary" @click="doFilter">搜索</el-button>
+      <el-button @click="clearFilter">重置</el-button>
+    </div>
+
+    <el-card shadow="never">
+      <el-table :data="logs" stripe v-loading="loading" style="width:100%">
+        <el-table-column prop="id"          label="ID"       width="70" />
+        <el-table-column prop="taskId"      label="任务ID"   width="80" />
+        <el-table-column prop="accountId"   label="账号ID"   width="80" />
+        <el-table-column prop="result"      label="结果"     width="120">
+          <template #default="{ row }">
+            <el-tag :type="resultTagType(row.result)" size="small">{{ row.result }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="actualAt"    label="执行时间" min-width="155">
+          <template #default="{ row }">{{ formatDt(row.actualAt) }}</template>
+        </el-table-column>
+        <el-table-column prop="durationMs"  label="耗时(ms)" width="90" />
+        <el-table-column prop="orderId"     label="订单号"   min-width="140" show-overflow-tooltip />
+        <el-table-column prop="errorMsg"    label="错误信息" min-width="180" show-overflow-tooltip />
+      </el-table>
+      <div class="pagination-wrap">
+        <el-pagination
+          v-model:current-page="pagination.current"
+          v-model:page-size="pagination.size"
+          :total="pagination.total"
+          :page-sizes="[20, 50, 100]"
+          layout="total, sizes, prev, pager, next"
+          @size-change="loadLogs"
+          @current-change="loadLogs"
+        />
+      </div>
+    </el-card>
+  </div>
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://unpkg.com/element-plus"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="/js/api.js"></script>
+<script>
+const { createApp, ref, reactive, onMounted } = Vue;
+
+createApp({
+  setup() {
+    const username = ref(localStorage.getItem('jwt_username') || 'admin');
+    const loading = ref(false);
+    const logs = ref([]);
+    const pagination = reactive({ current: 1, size: 20, total: 0 });
+    const filter = reactive({ taskId: '', result: '' });
+
+    onMounted(async () => {
+      if (!localStorage.getItem('jwt_token')) {
+        window.location.href = '/index.html';
+        return;
+      }
+      await loadLogs();
+    });
+
+    async function loadLogs() {
+      loading.value = true;
+      const params = { current: pagination.current, size: pagination.size };
+      if (filter.taskId) params.taskId = filter.taskId;
+      if (filter.result) params.result = filter.result;
+      try {
+        const res = await api.logs.list(params);
+        logs.value = res.data.records || [];
+        pagination.total = res.data.total || 0;
+      } catch (e) {
+        ElementPlus.ElMessage.error('加载失败：' + e.message);
+      } finally {
+        loading.value = false;
+      }
+    }
+
+    function doFilter() {
+      pagination.current = 1;
+      loadLogs();
+    }
+
+    function clearFilter() {
+      filter.taskId = '';
+      filter.result = '';
+      doFilter();
+    }
+
+    function resultTagType(result) {
+      const map = { SUCCESS: 'success', NO_STOCK: 'warning', AUTH_EXPIRED: 'danger', FAILED: 'danger' };
+      return map[result] || 'info';
+    }
+
+    function formatDt(dt) {
+      if (!dt) return '-';
+      return dt.replace('T', ' ').substring(0, 19);
+    }
+
+    function go(page) { window.location.href = '/' + page + '.html'; }
+
+    function logout() {
+      localStorage.removeItem('jwt_token');
+      localStorage.removeItem('jwt_username');
+      window.location.href = '/index.html';
+    }
+
+    return {
+      username, loading, logs, pagination, filter,
+      loadLogs, doFilter, clearFilter, resultTagType, formatDt, go, logout
+    };
+  }
+}).use(ElementPlus).mount('#app');
+</script>
+</body>
+</html>

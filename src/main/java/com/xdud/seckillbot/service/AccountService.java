@@ -16,4 +16,8 @@ public interface AccountService {
     void deleteAccount(Long id);
 
     void refreshAuth(Long id);
+
+    void sendSmsCode(Long accountId);
+
+    Account loginWithSmsCode(Long accountId, String smsCode);
 }

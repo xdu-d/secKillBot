@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>仪表板 - secKillBot</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div id="app">
+  <!-- 导航栏 -->
+  <div class="nav-container">
+    <el-menu mode="horizontal" :default-active="'dashboard'" background-color="#fff">
+      <el-menu-item index="dashboard" @click="go('dashboard')">🏠 仪表板</el-menu-item>
+      <el-menu-item index="accounts"  @click="go('accounts')">👤 账号管理</el-menu-item>
+      <el-menu-item index="tasks"     @click="go('tasks')">📋 任务管理</el-menu-item>
+      <el-menu-item index="logs"      @click="go('logs')">📄 执行日志</el-menu-item>
+      <div class="nav-spacer"></div>
+      <el-menu-item @click="logout" style="margin-left:auto">退出 ({{ username }})</el-menu-item>
+    </el-menu>
+  </div>
+
+  <div class="main-content">
+    <h2 style="margin-bottom:20px;color:#303133">系统概览</h2>
+
+    <!-- 统计卡片 -->
+    <div class="stat-cards">
+      <el-card class="stat-card" shadow="hover">
+        <div class="stat-number">{{ stats.accountCount }}</div>
+        <div class="stat-label">账号总数</div>
+      </el-card>
+      <el-card class="stat-card" shadow="hover">
+        <div class="stat-number">{{ stats.taskCount }}</div>
+        <div class="stat-label">任务总数</div>
+      </el-card>
+      <el-card class="stat-card" shadow="hover">
+        <div class="stat-number" style="color:#e6a23c">{{ stats.scheduledCount }}</div>
+        <div class="stat-label">已调度任务</div>
+      </el-card>
+      <el-card class="stat-card" shadow="hover">
+        <div class="stat-number" style="color:#67c23a">{{ stats.recentLogCount }}</div>
+        <div class="stat-label">近24h日志</div>
+      </el-card>
+    </div>
+
+    <!-- 最近执行日志 -->
+    <el-card shadow="never">
+      <template #header>
+        <span style="font-weight:600">最近执行记录</span>
+        <el-button text @click="go('logs')" style="float:right">查看全部</el-button>
+      </template>
+      <el-table :data="recentLogs" stripe size="small" v-loading="logsLoading">
+        <el-table-column prop="taskId"    label="任务ID"   width="80" />
+        <el-table-column prop="accountId" label="账号ID"   width="80" />
+        <el-table-column prop="result"    label="结果"     width="110">
+          <template #default="{ row }">
+            <el-tag :type="resultTagType(row.result)" size="small">{{ row.result }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="actualAt"  label="执行时间" min-width="160">
+          <template #default="{ row }">{{ formatDt(row.actualAt) }}</template>
+        </el-table-column>
+        <el-table-column prop="durationMs" label="耗时(ms)" width="90" />
+        <el-table-column prop="orderId"   label="订单号"   min-width="120" />
+        <el-table-column prop="errorMsg"  label="错误信息" min-width="160" show-overflow-tooltip />
+      </el-table>
+    </el-card>
+  </div>
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://unpkg.com/element-plus"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="/js/api.js"></script>
+<script>
+const { createApp, ref, onMounted } = Vue;
+
+createApp({
+  setup() {
+    const username = ref(localStorage.getItem('jwt_username') || 'admin');
+    const stats = ref({ accountCount: 0, taskCount: 0, scheduledCount: 0, recentLogCount: 0 });
+    const recentLogs = ref([]);
+    const logsLoading = ref(false);
+
+    onMounted(async () => {
+      if (!localStorage.getItem('jwt_token')) {
+        window.location.href = '/index.html';
+        return;
+      }
+      await loadData();
+    });
+
+    async function loadData() {
+      logsLoading.value = true;
+      try {
+        const [accRes, taskRes, logRes] = await Promise.all([
+          api.accounts.list(1, 1),
+          api.tasks.list(1, 1),
+          api.logs.list({ current: 1, size: 5 })
+        ]);
+        stats.value.accountCount = accRes.data.total || 0;
+        stats.value.taskCount = taskRes.data.total || 0;
+
+        // 统计已调度
+        const allTasksRes = await api.tasks.list(1, 1000);
+        const allTasks = allTasksRes.data.records || [];
+        stats.value.scheduledCount = allTasks.filter(t => t.status === 'SCHEDULED').length;
+
+        recentLogs.value = logRes.data.records || [];
+        stats.value.recentLogCount = logRes.data.total || 0;
+      } catch (e) {
+        ElementPlus.ElMessage.error('加载数据失败：' + e.message);
+      } finally {
+        logsLoading.value = false;
+      }
+    }
+
+    function resultTagType(result) {
+      const map = { SUCCESS: 'success', NO_STOCK: 'warning', AUTH_EXPIRED: 'danger', FAILED: 'danger' };
+      return map[result] || 'info';
+    }
+
+    function formatDt(dt) {
+      if (!dt) return '-';
+      return dt.replace('T', ' ').substring(0, 19);
+    }
+
+    function go(page) {
+      window.location.href = '/' + page + '.html';
+    }
+
+    function logout() {
+      localStorage.removeItem('jwt_token');
+      localStorage.removeItem('jwt_username');
+      window.location.href = '/index.html';
+    }
+
+    return { username, stats, recentLogs, logsLoading, resultTagType, formatDt, go, logout };
+  }
+}).use(ElementPlus).mount('#app');
+</script>
+</body>
+</html>
